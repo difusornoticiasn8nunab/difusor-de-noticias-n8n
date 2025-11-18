@@ -1,0 +1,1344 @@
+{
+  "name": "Proyecto Agente Inteligente",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "HU3 VALIDACION DE URL\nEnlace Bueno --> Siguiente sprint\nEnlace inválido --> Actualización en casilla en sheets (Enlace Roto/Invalido (\"Enlace\"))",
+        "height": 608,
+        "width": 1440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2144,
+        3264
+      ],
+      "typeVersion": 1,
+      "id": "c0a345cc-936f-49e3-b545-afb2a92eef9f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const url = item.json.url;\n\n  // Si el nodo HTTP devolvió error\n  if (item.json.error) {\n    return {\n      json: {\n        url,\n        valido: false,\n        razon: item.json.error,\n      },\n    };\n  }\n\n  // Si no hay error, es válido\n  return {\n    json: {\n      url,\n      valido: true,\n      status: item.json.statusCode || 200,\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        320
+      ],
+      "id": "b92351d5-d1f2-4c4c-9d1c-f305889bb4db",
+      "name": "Transformacion de Validacion",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{ $('Base de datos de las solicitudes').item.json['Enlace adicional'] }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1968,
+        3376
+      ],
+      "id": "0bdce5c1-56b4-47c4-8c3a-0b9e1eece475",
+      "name": "VALIDACION URL",
+      "notesInFlow": false,
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "Primera parte, actualiza la fila a Pendiente, si es que es distinto de HECHO.\n",
+        "height": 304,
+        "width": 1488,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3664,
+        3568
+      ],
+      "typeVersion": 1,
+      "id": "798aaa49-a392-4144-b803-98a51c25c4d2",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Función para convertir un número de fecha de Google Sheets a formato MM/DD/YYYY\nfunction googleSheetsToDate(excelNum) {\n    const startDate = new Date(1899, 11, 30); // Fecha base de Google Sheets (30 de diciembre de 1899)\n    startDate.setDate(startDate.getDate() + excelNum); // Ajustar el número de días\n    return startDate;\n}\n\n// Función para formatear la fecha en MM/DD/YYYY\nfunction formatDate(date) {\n    const month = String(date.getMonth() + 1).padStart(2, '0'); // Mes (1-12)\n    const day = String(date.getDate()).padStart(2, '0'); // Día (1-31)\n    const year = date.getFullYear(); // Año (yyyy)\n    return `${month}/${day}/${year}`;\n}\n\n// Iterar sobre todos los elementos de entrada (pueden ser varios)\nconst inputData = items.map(item => {$json.Fecha\n    const excelDate = item.json.Fecha; // Obtener el valor de la propiedad 'Fecha'\n    \n    // Verificar si existe el valor de fecha\n    if (excelDate !== undefined && excelDate !== null) {\n        const convertedDate = googleSheetsToDate(excelDate);\n        const formattedDate = formatDate(convertedDate);\n\n        // Retornar los resultados con la fecha original y la fecha formateada\n        return {\n            json: {\n                originalExcelDate: excelDate,\n                formattedDate: formattedDate\n            }\n        };\n    }\n\n    // Si no hay valor de fecha, retornar el objeto tal cual\n    return item;\n});\n\n// Devolver los resultados\nreturn inputData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3392,
+        3664
+      ],
+      "id": "7a117947-3b82-4417-861d-a110b754b99f",
+      "name": "Cambiar formato fecha",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c08590f0-d237-4ac9-bba0-37e0f61de559",
+              "name": "Marca temporal",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Marca temporal'] }}",
+              "type": "number"
+            },
+            {
+              "id": "b34a786d-a869-44aa-968b-ae14a4b420c5",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8c78e9c3-9986-40e9-9874-fd86cfe03886",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ef85674e-323d-4c0e-97d4-f7cf38faae0d",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "23a04e26-0953-476b-bea9-2b6666762d49",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cb40c032-317e-4f8a-abf1-e4958d402f8f",
+              "name": "Fecha",
+              "value": "={{ $json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "81f70bb2-b83a-4601-a0e7-ae4a0fbd1516",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "131fc145-1702-42c1-8978-48243f8c714e",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "09a143bb-b876-4a4c-916b-17d12394fa9c",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7255f9d8-c094-4488-8414-758b56dc72bd",
+              "name": "Dirección de correo electrónico",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Dirección de correo electrónico'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5b4c1055-3d26-4526-b182-0bb870d13dab",
+              "name": "Estado",
+              "value": "={{ $('Base de datos de las solicitudes').item.json.Estado }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3168,
+        3664
+      ],
+      "id": "1f988c97-45c0-454b-a0bf-1abc27387b29",
+      "name": "Lectura de los datos ",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3616,
+        3664
+      ],
+      "id": "be6a8d9c-e2af-4e20-b2a1-f9a5ea97151c",
+      "name": "Base de datos de las solicitudes",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "bhgz1FEFpvTv5RsC",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const raw = item.json[\"Marca temporal\"];\n  if (!raw) {\n    item.json.MarcatemporalFecha = null;\n    return item;\n  }\n\n  const valor = typeof raw === \"string\" ? parseFloat(raw) : raw;\n  if (isNaN(valor)) {\n    item.json.MarcaTemporalFecha = null;\n    return item;\n  }\n  \n  // Días desde 1899-12-30 → segundos totales\n  const totalSegundos = (valor - 25569) * 86400;\n  // Redondear al segundo exacto (Sheets redondea a segundos)\n  const segundosExactos = Math.round(totalSegundos);\n  const fecha = new Date(segundosExactos * 1000);\n\n  // Extraer hora UTC exacta\n  const yyyy = fecha.getUTCFullYear();\n  const mm = String(fecha.getUTCMonth() + 1).padStart(2, \"0\");\n  const dd = String(fecha.getUTCDate()).padStart(2, \"0\");\n  const hh = String(fecha.getUTCHours()).padStart(2, \"0\");\n  const min = String(fecha.getUTCMinutes()).padStart(2, \"0\");\n  const ss = String(fecha.getUTCSeconds()).padStart(2, \"0\");\n\n  item.json.MarcaTemporalFecha = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2944,
+        3664
+      ],
+      "id": "6b8ebf5b-4de3-49b6-b3bf-6033b8ca9b24",
+      "name": "Transforma Para tener ID de columna"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eadd80ac-5d5b-4bd3-adb1-426a25d67038",
+              "leftValue": "={{ $json.Estado }}",
+              "rightValue": "HECHO",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1456,
+        320
+      ],
+      "id": "16ae1184-16e0-4669-aa71-d57ba9673f0c",
+      "name": "IF NOT HECHO"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "PENDIENTE",
+            "Marca temporal": "={{ $json.MarcaTemporalFecha }}"
+          },
+          "matchingColumns": [
+            "Marca temporal"
+          ],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipo de Actividad",
+              "displayName": "Tipo de Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Título de la actividad",
+              "displayName": "Título de la actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Descripción breve",
+              "displayName": "Descripción breve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carrera Responsable",
+              "displayName": "Carrera Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lugar",
+              "displayName": "Lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imágenes o videos adjuntos",
+              "displayName": "Imágenes o videos adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Enlace adicional",
+              "displayName": "Enlace adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Dirección de correo electrónico",
+              "displayName": "Dirección de correo electrónico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2496,
+        3664
+      ],
+      "id": "61ae67bf-1bbc-4062-bb9c-65a05e304a87",
+      "name": "Cambiar a PENDIENTE",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Bhoublw1k27z4pg8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2c18eee9-3351-4c57-a877-b3e8a02c0055",
+              "leftValue": "={{ $('Base de datos de las solicitudes').item.json.Estado }}",
+              "rightValue": "HECHO",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2720,
+        3664
+      ],
+      "id": "17ddf8ca-805a-4488-90da-6c35d5db7293",
+      "name": "Filtra que no haya HECHOS"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "596413cf-b9f8-40a3-b3c4-7e17b53ea480",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "63bfe531-5426-4166-8dc8-47d269c8e733",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "26a29475-327a-4e34-8e67-1006de22bb87",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "41cd856f-98f7-45cf-b412-de92864b17da",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ee87fef1-061d-471b-b59c-444c2858aaba",
+              "name": "Fecha",
+              "value": "={{ $('Cambiar formato fecha').item.json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "ed3112c3-11bd-46da-92c1-ada72f8c05e1",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "1cf4bcf2-8fc1-4a2f-8bbe-7dbd22e8946b",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "52a8f8c9-6147-465c-8c87-4a4377124ade",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e6dc26b-a82b-435b-8e77-d6ca69d78a88",
+              "name": "page_test_id",
+              "value": "105243495725000 ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        3648
+      ],
+      "id": "7e1a8258-f669-4a9b-a8d7-fd13f3d3eb08",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Marca temporal": "={{ $('Transforma Para tener ID de columna').item.json.MarcaTemporalFecha }}",
+            "Enlace adicional": "=Enlace Roto/Invalido ({{ $('Base de datos de las solicitudes').item.json['Enlace adicional'] }})"
+          },
+          "matchingColumns": [
+            "Marca temporal"
+          ],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipo de Actividad",
+              "displayName": "Tipo de Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Título de la actividad",
+              "displayName": "Título de la actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Descripción breve",
+              "displayName": "Descripción breve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carrera Responsable",
+              "displayName": "Carrera Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lugar",
+              "displayName": "Lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imágenes o videos adjuntos",
+              "displayName": "Imágenes o videos adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Enlace adicional",
+              "displayName": "Enlace adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Dirección de correo electrónico",
+              "displayName": "Dirección de correo electrónico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1536,
+        3536
+      ],
+      "id": "94920dc9-950d-42ba-bb00-ee5886ff3538",
+      "name": "Actualiza casilla en sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Bhoublw1k27z4pg8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1040,
+        3632
+      ],
+      "id": "95d43c8c-8f30-4faa-92d5-869901b20f4c",
+      "name": "Adjunta todo"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "\"Eres un poeta brillante que siempre responde en pareados rimados\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "9f945cd3-1c36-49a1-8ee8-4395e1f02ebe",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        240,
+        192
+      ],
+      "id": "5bf39aa5-b70b-4152-9666-90056e729131",
+      "name": "Groq Chat Model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "12cfa90d-dc48-4466-a30d-38065df2da4b",
+      "name": "When chat message received",
+      "webhookId": "3cbd26f4-c0d0-4e0e-9422-5e4444a8b646"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        336
+      ],
+      "id": "d2d5e2ea-c672-4025-8dd8-24396646bd50",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "65dbd059-eed6-465c-bf04-3bed7f0112d7",
+              "leftValue": "={{ $('Base de datos de las solicitudes').item.json['Enlace adicional'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2080,
+        3664
+      ],
+      "id": "4c55604e-19c2-4de7-a700-6fc27c201c87",
+      "name": "IF URL NOT VACÍO"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aaebcb58-b41e-4a57-99fb-9e05249935ae",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "=undefined",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "67641f8a-e3e3-4d85-8afc-f84dccd866b3",
+              "leftValue": "={{ $('Base de datos de las solicitudes').item.json['Enlace adicional'] }}",
+              "rightValue": "=Enlace Roto/Invalido",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1792,
+        3376
+      ],
+      "id": "1e7767bf-73ad-4e1b-b8b3-fbfe99548ce5",
+      "name": "If Validación es vacío o error"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "840283149170605",
+        "edge": "feed",
+        "sendBinaryData": true,
+        "binaryPropertyName": "data",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "=message = {{$('Edit Fields').item.json['Título de la actividad']}} \\n\\nDescripción: {{$('Edit Fields').item.json['Descripción breve']}}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        3600
+      ],
+      "id": "2b6ba3a3-72a9-4803-9d9e-e8ce05053d09",
+      "name": "Facebook Graph API1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "e3NEWnPM7NUfHUVw",
+          "name": "Facebook Graph account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Code in JavaScript').item.json.driveFileId }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        3600
+      ],
+      "id": "b716a4c1-fe41-4ebf-889e-ec34af0180cb",
+      "name": "Share file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3GyZF3T1ZI1ZYj8X",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nfor (const item of items) {\n  // Obtiene la URL completa del campo 'Imágenes o videos adjuntos'\n  const url = item.json['Imágenes o videos adjuntos']; \n  \n  if (url && typeof url === 'string') {\n    // Expresión regular para extraer el ID de la URL de Drive (formato /open?id=ID)\n    const regex = /(?:\\/open\\?id=|\\/d\\/)([^/]+)/;\n    const match = url.match(regex);\n    \n    if (match && match[1]) {\n      // Crea una nueva variable llamada 'driveFileId' con solo el ID limpio\n      item.json.driveFileId = match[1]; \n    }\n  }\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        3600
+      ],
+      "id": "bf123d2f-c6d0-4911-b4d0-6e007b07f7c6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "Marca temporal"
+          ],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipo de Actividad",
+              "displayName": "Tipo de Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Título de la actividad",
+              "displayName": "Título de la actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descripción breve",
+              "displayName": "Descripción breve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Carrera Responsable",
+              "displayName": "Carrera Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lugar",
+              "displayName": "Lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Imágenes o videos adjuntos",
+              "displayName": "Imágenes o videos adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enlace adicional",
+              "displayName": "Enlace adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Dirección de correo electrónico",
+              "displayName": "Dirección de correo electrónico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        3600
+      ],
+      "id": "2c2313cd-7a93-4d9e-afa0-2ccc86b6f367",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Bhoublw1k27z4pg8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Code in JavaScript').item.json.driveFileId }}",
+          "mode": "id"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -352,
+        3600
+      ],
+      "id": "826c0ae0-929e-4c29-8c20-31c6a9822636",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3GyZF3T1ZI1ZYj8X",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "VALIDACION URL": {
+      "main": [
+        [
+          {
+            "node": "If Validación es vacío o error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cambiar formato fecha": {
+      "main": [
+        [
+          {
+            "node": "Lectura de los datos ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lectura de los datos ": {
+      "main": [
+        [
+          {
+            "node": "Transforma Para tener ID de columna",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base de datos de las solicitudes": {
+      "main": [
+        [
+          {
+            "node": "Cambiar formato fecha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transforma Para tener ID de columna": {
+      "main": [
+        [
+          {
+            "node": "Filtra que no haya HECHOS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cambiar a PENDIENTE": {
+      "main": [
+        [
+          {
+            "node": "IF URL NOT VACÍO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra que no haya HECHOS": {
+      "main": [
+        [
+          {
+            "node": "Cambiar a PENDIENTE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualiza casilla en sheets": {
+      "main": [
+        [
+          {
+            "node": "Adjunta todo",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Adjunta todo": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF URL NOT VACÍO": {
+      "main": [
+        [
+          {
+            "node": "VALIDACION URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Adjunta todo",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "If Validación es vacío o error": {
+      "main": [
+        [
+          {
+            "node": "Adjunta todo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Actualiza casilla en sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "08f400da-2fa9-4e16-8acd-d48f30c35d82",
+  "meta": {
+    "instanceId": "c16030f744417654f679fe37a4b66d4b709ac2acb4de1d393e6cda8a760f53bc"
+  },
+  "id": "o0g1oGEXTx7siUSV",
+  "tags": []
+}
