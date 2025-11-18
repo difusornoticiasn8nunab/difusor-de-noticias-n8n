@@ -1,0 +1,459 @@
+{
+  "name": "SubWorkflow de difusor agente inteligente post facebook",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        496,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Post Facebook",
+        "height": 416,
+        "width": 1216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "e1f270dc-158e-4c82-995c-c33b150bafea",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Marca temporal": "={{ $('Loop Over Items').item.json.MarcaTemporalFecha }}",
+            "Estado": "HECHO"
+          },
+          "matchingColumns": [
+            "Marca temporal"
+          ],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipo de Actividad",
+              "displayName": "Tipo de Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Título de la actividad",
+              "displayName": "Título de la actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Descripción breve",
+              "displayName": "Descripción breve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carrera Responsable",
+              "displayName": "Carrera Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lugar",
+              "displayName": "Lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imágenes o videos adjuntos",
+              "displayName": "Imágenes o videos adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Enlace adicional",
+              "displayName": "Enlace adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Dirección de correo electrónico",
+              "displayName": "Dirección de correo electrónico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        416
+      ],
+      "id": "d419f9e1-db12-4adc-8b62-e83a87a03ae8",
+      "name": "Update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ic896ruEGba3XeSN",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        784,
+        240
+      ],
+      "id": "dff7d504-cedc-44da-8165-35d742fbbebd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f1cbafa-66d5-405a-9184-4fac86cd8269",
+              "name": "=Carrera Responsable",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cdbdd652-ed31-4769-b50c-76d3df14969e",
+              "name": "Datos publicación",
+              "value": "={{ $('When Executed by Another Workflow').item.json['Datos publicación'] }}",
+              "type": "string"
+            },
+            {
+              "id": "bffdf54f-78e2-4f40-8857-50db6a32f616",
+              "name": "MarcaTemporalFecha",
+              "value": "={{ $('Update row in sheet2').item.json['Marca temporal'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1408,
+        224
+      ],
+      "id": "c60eb042-7595-4bce-8d40-fc180c42dbcc",
+      "name": "Información Post-IG2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        224
+      ],
+      "id": "4ea36ec2-f8c1-4c4f-ab15-a2eb345a1e37",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "amount": 4,
+        "unit": "hours"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        416
+      ],
+      "id": "834c1777-1ac4-4eb6-9147-ede8470e4094",
+      "name": "Tiempo entre publicaciones",
+      "webhookId": "3c61d72a-b735-4ac1-94c9-5de9a0c8d9f8"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "840283149170605",
+        "edge": "={{ $json.mimeType.startsWith(\"video\") ? \"videos\" : \"photos\" }}",
+        "sendBinaryData": true,
+        "binaryPropertyName": "data",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $json.output }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        944,
+        416
+      ],
+      "id": "1b983ed5-8e29-4bfa-85c3-b295dca30c29",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "QXXnOCLKsaaeY5lQ",
+          "name": "Facebook Graph account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "processType": "image",
+          "fileName": "prueba - Javier Gomez.jpeg",
+          "mimeType": "image/jpeg",
+          "Tipo de Actividad": "Evento Académico",
+          "Título de la actividad": "Pureba",
+          "Descripción breve": "PRUEBA",
+          "Carrera Responsable": "PRUEBA",
+          "Fecha": "10/25/2025",
+          "Lugar": "PRUEBA",
+          "Imágenes o videos adjuntos": "https://drive.google.com/open?id=1nMSQucQFENqnZKR2oP6GV80AwXGTghf0",
+          "Enlace adicional": "Enlace Roto/Invalido (pruebaenlace)",
+          "page_test_id": "105243495725000 ",
+          "node": "17841478564240092",
+          "MarcaTemporalFecha": "22/10/2025 20:19:10",
+          "Datos publicación": "",
+          "output": "🎉 Nos complace anunciar que se llevó a cabo con gran entusiasmo la actividad \"Pureba\" el día 25 de octubre en PRUEBA 📚. Esta prueba demostró el compromiso y la dedicación de nuestros estudiantes, quienes se esforzaron por lograr un excelente desempeño. ¡Felicitaciones por este logro! 🎓✨"
+        },
+        "binary": {
+          "data": {
+            "mimeType": "image/jpeg",
+            "fileType": "image",
+            "fileExtension": "jpeg",
+            "data": "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",
+            "fileName": "prueba - Javier Gomez.jpeg",
+            "fileSize": "6.41 kB"
+          }
+        }
+      },
+      {
+        "json": {
+          "processType": "image",
+          "fileName": "prueba - Javier Gomez.jpeg",
+          "mimeType": "image/jpeg",
+          "Tipo de Actividad": "Evento Académico",
+          "Título de la actividad": "PRUEBA",
+          "Descripción breve": "PRUEBA",
+          "Carrera Responsable": "PRUEABA",
+          "Fecha": "10/18/2025",
+          "Lugar": "PRUEBA",
+          "Imágenes o videos adjuntos": "https://drive.google.com/open?id=11Cc5S-w6ZZCWTpF6_WlV84rceLeXapn4",
+          "Enlace adicional": "",
+          "page_test_id": "105243495725000 ",
+          "node": "17841478564240092",
+          "MarcaTemporalFecha": "22/10/2025 20:48:47",
+          "Datos publicación": "",
+          "output": "🎓 Nos complace anunciar que se llevó a cabo la actividad \"PRUEBA\" el día 18 de octubre en PRUEBA 📚. Esta experiencia única permitió a nuestros estudiantes demostrar su capacidad y creatividad. ¡Felicitaciones por este logro! 🎉"
+        },
+        "binary": {
+          "data": {
+            "mimeType": "image/jpeg",
+            "fileType": "image",
+            "fileExtension": "jpeg",
+            "data": "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",
+            "fileName": "prueba - Javier Gomez.jpeg",
+            "fileSize": "6.41 kB"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Tiempo entre publicaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing2": {
+      "main": [
+        [
+          {
+            "node": "Información Post-IG2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiempo entre publicaciones": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "82558327-3aab-4bbf-96e6-a2c9a869c219",
+  "meta": {
+    "instanceId": "57cbccbd29910ba3d5b74dc8112fc8d585b2c0b875b5fea8e89fd6f150d629f2"
+  },
+  "id": "BPy9BoC9UkBQUoW0",
+  "tags": []
+}
