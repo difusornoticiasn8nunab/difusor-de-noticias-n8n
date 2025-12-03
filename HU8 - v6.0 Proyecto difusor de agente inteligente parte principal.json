@@ -1,0 +1,1751 @@
+{
+  "name": "Proyecto difusor de agente inteligente parte principal",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "drive",
+        "height": 400,
+        "width": 992,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2288,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "709ae78f-7b4d-4fd1-9a3d-f420389a2df2",
+      "name": "Sticky Note3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Por favor, une la siguiente información en un solo párrafo con el siguiente formato:\n\nTítulo de la actividad: {{ $('Lectura de los datos 1').item.json['Título de la actividad'] }}\nDescripción breve: {{ $('Lectura de los datos 1').item.json['Descripción breve'] }}\nFecha: {{ $('Lectura de los datos 1').item.json.Fecha }}\nLugar: {{ $('Lectura de los datos 1').item.json.Lugar }}\nEnlace adicional: {{ $('Lectura de los datos 1').item.json['Enlace adicional'] }}\n\n🔹 Instrucciones de redacción:\n\n1. El texto debe ser **corto, llamativo y positivo**, como una publicación que celebra un **logro estudiantil o académico**.\n2. **No empieces siempre igual.** Elige aleatoriamente uno de estos estilos de inicio.\n\n3. Si el evento **ya ocurrió**, usa **tiempo pasado** (ejemplo: “participó”, “logró”, “representó”).\n4. Si el evento **aún no ha ocurrido o está en proceso**, usa un tono de **anticipación** (ejemplo: “participará”, “se prepara para”).\n5. **Convierte la fecha ({{ $('Lectura de los datos 1').item.json.Fecha }})** al formato “el día [número] de [mes en palabras]” (por ejemplo: “2025-11-13” → “el día 13 de noviembre”).\n6. Incluye el **lugar** si está disponible (por ejemplo: “en {{ $('Lectura de los datos 1').item.json.Lugar }}”).\n7. Usa **emojis apropiados** según el contexto (🎓🏅📚🎉✨📹 etc.) para hacerlo más visual y alegre.\n8. Si el campo **“Enlace adicional”** contiene “Enlace Roto/Invalido”, **omite ese campo** completamente.\n9. Si el enlace es válido, agrégalo naturalmente al final (por ejemplo: “Más información 👉 [enlace]”).\n\n🔸 **Ejemplo del tipo de salida esperada:**\n🎓 Nos alegra compartir que nuestros estudiantes participaron con gran éxito en la actividad “Probando nuevo logro” el día 11 de julio en Aquí 📚. Una experiencia enriquecedora donde demostraron creatividad y compromiso académico. ¡Felicitaciones por este gran paso! 🎉  \nMás información 👉 [enlace válido]",
+        "options": {
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2736,
+        784
+      ],
+      "id": "70cc3509-0dfe-4e20-bd7c-120be3428d2d",
+      "name": "Prompt de mensaje1"
+    },
+    {
+      "parameters": {
+        "content": "HU3 VALIDACION DE URL\nEnlace Bueno --> Siguiente sprint\nEnlace inválido --> Actualización en casilla en sheets (Enlace Roto/Invalido (\"Enlace\"))",
+        "height": 592,
+        "width": 928
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3744,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "308e01b8-30ed-4cef-ac32-3a2ac617ec99",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3552,
+        656
+      ],
+      "id": "ce863f87-2cc1-4d87-829d-61ce64b620dd",
+      "name": "VALIDACION URL1",
+      "notesInFlow": false,
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "Primera parte, actualiza la fila a Pendiente, si es que es distinto de HECHO.\n",
+        "height": 304,
+        "width": 1488,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5264,
+        688
+      ],
+      "typeVersion": 1,
+      "id": "632deeee-4cdc-4ac5-8958-e02506a52c61",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Función para convertir un número de fecha de Google Sheets a formato MM/DD/YYYY\nfunction googleSheetsToDate(excelNum) {\n    const startDate = new Date(1899, 11, 30); // Fecha base de Google Sheets (30 de diciembre de 1899)\n    startDate.setDate(startDate.getDate() + excelNum); // Ajustar el número de días\n    return startDate;\n}\n\n// Función para formatear la fecha en MM/DD/YYYY\nfunction formatDate(date) {\n    const month = String(date.getMonth() + 1).padStart(2, '0'); // Mes (1-12)\n    const day = String(date.getDate()).padStart(2, '0'); // Día (1-31)\n    const year = date.getFullYear(); // Año (yyyy)\n    return `${month}/${day}/${year}`;\n}\n\n// Iterar sobre todos los elementos de entrada (pueden ser varios)\nconst inputData = items.map(item => {$json.Fecha\n    const excelDate = item.json.Fecha; // Obtener el valor de la propiedad 'Fecha'\n    \n    // Verificar si existe el valor de fecha\n    if (excelDate !== undefined && excelDate !== null) {\n        const convertedDate = googleSheetsToDate(excelDate);\n        const formattedDate = formatDate(convertedDate);\n\n        // Retornar los resultados con la fecha original y la fecha formateada\n        return {\n            json: {\n                originalExcelDate: excelDate,\n                formattedDate: formattedDate\n            }\n        };\n    }\n\n    // Si no hay valor de fecha, retornar el objeto tal cual\n    return item;\n});\n\n// Devolver los resultados\nreturn inputData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4992,
+        800
+      ],
+      "id": "d117282b-b77d-424a-af3b-343ca21145de",
+      "name": "Cambiar formato fecha1",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c08590f0-d237-4ac9-bba0-37e0f61de559",
+              "name": "Marca temporal",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Marca temporal'] }}",
+              "type": "number"
+            },
+            {
+              "id": "b34a786d-a869-44aa-968b-ae14a4b420c5",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8c78e9c3-9986-40e9-9874-fd86cfe03886",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ef85674e-323d-4c0e-97d4-f7cf38faae0d",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "23a04e26-0953-476b-bea9-2b6666762d49",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cb40c032-317e-4f8a-abf1-e4958d402f8f",
+              "name": "Fecha",
+              "value": "={{ $json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "81f70bb2-b83a-4601-a0e7-ae4a0fbd1516",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "131fc145-1702-42c1-8978-48243f8c714e",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "09a143bb-b876-4a4c-916b-17d12394fa9c",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7255f9d8-c094-4488-8414-758b56dc72bd",
+              "name": "Dirección de correo electrónico",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Dirección de correo electrónico'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5b4c1055-3d26-4526-b182-0bb870d13dab",
+              "name": "Estado",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json.Estado }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4752,
+        800
+      ],
+      "id": "88e29ab5-4685-4f17-acdd-d46a01ac3e5a",
+      "name": "Lectura de los datos 1",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -5216,
+        800
+      ],
+      "id": "0cdad920-88a9-45e8-8386-3822c33fd45f",
+      "name": "Base de datos de las solicitudes1",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "lNUumQkKhv1QiBf5",
+          "name": "unabproyecton8n"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const raw = item.json[\"Marca temporal\"];\n  if (!raw) {\n    item.json.MarcatemporalFecha = null;\n    return item;\n  }\n\n  const valor = typeof raw === \"string\" ? parseFloat(raw) : raw;\n  if (isNaN(valor)) {\n    item.json.MarcaTemporalFecha = null;\n    return item;\n  }\n  \n  // Días desde 1899-12-30 → segundos totales\n  const totalSegundos = (valor - 25569) * 86400;\n  // Redondear al segundo exacto (Sheets redondea a segundos)\n  const segundosExactos = Math.round(totalSegundos);\n  const fecha = new Date(segundosExactos * 1000);\n\n  // Extraer hora UTC exacta\n  const yyyy = fecha.getUTCFullYear();\n  const mm = String(fecha.getUTCMonth() + 1).padStart(2, \"0\");\n  const dd = String(fecha.getUTCDate()).padStart(2, \"0\");\n  const hh = String(fecha.getUTCHours()).padStart(2, \"0\");\n  const min = String(fecha.getUTCMinutes()).padStart(2, \"0\");\n  const ss = String(fecha.getUTCSeconds()).padStart(2, \"0\");\n\n  item.json.MarcaTemporalFecha = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;\n  return item;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4512,
+        800
+      ],
+      "id": "c66d669b-ab03-437c-97e5-feb493bbc9bf",
+      "name": "Transforma Para tener ID de columna1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "PENDIENTE",
+            "Marca temporal": "={{ $json.MarcaTemporalFecha }}"
+          },
+          "matchingColumns": [
+            "Marca temporal"
+          ],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipo de Actividad",
+              "displayName": "Tipo de Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Título de la actividad",
+              "displayName": "Título de la actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Descripción breve",
+              "displayName": "Descripción breve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carrera Responsable",
+              "displayName": "Carrera Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lugar",
+              "displayName": "Lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imágenes o videos adjuntos",
+              "displayName": "Imágenes o videos adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Enlace adicional",
+              "displayName": "Enlace adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Dirección de correo electrónico",
+              "displayName": "Dirección de correo electrónico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha Publicación",
+              "displayName": "Fecha Publicación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Datos publicación(IG)",
+              "displayName": "Datos publicación(IG)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Datos publicación(Facebook)",
+              "displayName": "Datos publicación(Facebook)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Datos publicación(pagina)",
+              "displayName": "Datos publicación(pagina)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -4000,
+        800
+      ],
+      "id": "267c7527-aa25-4df4-b0d4-a3ad1e5fff08",
+      "name": "Cambiar a PENDIENTE1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ic896ruEGba3XeSN",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2c18eee9-3351-4c57-a877-b3e8a02c0055",
+              "leftValue": "={{ $('Base de datos de las solicitudes1').item.json.Estado }}",
+              "rightValue": "HECHO",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -4256,
+        800
+      ],
+      "id": "e325c6f3-1cfb-4be9-b4f0-7a9d76f11b1b",
+      "name": "Filtra que no haya HECHOS1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM",
+          "mode": "list",
+          "cachedResultName": "Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales (Respuestas)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2104950952,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t0bTqvEVBiu5mn99dkTsE6QR7TmLtDX8DizlXoemdcM/edit#gid=2104950952"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Marca temporal": "={{ $('Transforma Para tener ID de columna1').item.json.MarcaTemporalFecha }}",
+            "Enlace adicional": "=Enlace Roto/Invalido ({{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }})"
+          },
+          "matchingColumns": [
+            "Marca temporal"
+          ],
+          "schema": [
+            {
+              "id": "Marca temporal",
+              "displayName": "Marca temporal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipo de Actividad",
+              "displayName": "Tipo de Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Título de la actividad",
+              "displayName": "Título de la actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Descripción breve",
+              "displayName": "Descripción breve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carrera Responsable",
+              "displayName": "Carrera Responsable",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lugar",
+              "displayName": "Lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imágenes o videos adjuntos",
+              "displayName": "Imágenes o videos adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Enlace adicional",
+              "displayName": "Enlace adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Dirección de correo electrónico",
+              "displayName": "Dirección de correo electrónico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3232,
+        752
+      ],
+      "id": "fa3928a8-4b91-45e1-88c7-ea12c7fc37d5",
+      "name": "Actualiza casilla en sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Ic896ruEGba3XeSN",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2944,
+        768
+      ],
+      "id": "04f35853-b8a6-445f-9294-18347f72f21f",
+      "name": "Adjunta todo1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "65dbd059-eed6-465c-bf04-3bed7f0112d7",
+              "leftValue": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3664,
+        800
+      ],
+      "id": "b014cb54-03e3-43ab-8068-e820be969437",
+      "name": "IF URL NOT VACÍO1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aaebcb58-b41e-4a57-99fb-9e05249935ae",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "=undefined",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "67641f8a-e3e3-4d85-8afc-f84dccd866b3",
+              "leftValue": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "rightValue": "=Enlace Roto/Invalido",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3392,
+        656
+      ],
+      "id": "38ff6b3f-54c0-40f3-b142-004b5898a882",
+      "name": "If Validación es vacío o error1"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        928
+      ],
+      "id": "61e6e285-5867-4e06-9728-073edec9ed39",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "vU6IlPFkFMWvtW5u",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "596413cf-b9f8-40a3-b3c4-7e17b53ea480",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "63bfe531-5426-4166-8dc8-47d269c8e733",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "26a29475-327a-4e34-8e67-1006de22bb87",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "41cd856f-98f7-45cf-b412-de92864b17da",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ee87fef1-061d-471b-b59c-444c2858aaba",
+              "name": "Fecha",
+              "value": "={{ $('Cambiar formato fecha1').item.json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "ed3112c3-11bd-46da-92c1-ada72f8c05e1",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "1cf4bcf2-8fc1-4a2f-8bbe-7dbd22e8946b",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "52a8f8c9-6147-465c-8c87-4a4377124ade",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e6dc26b-a82b-435b-8e77-d6ca69d78a88",
+              "name": "page_test_id",
+              "value": "105243495725000 ",
+              "type": "string"
+            },
+            {
+              "id": "bd9a3f0b-6c92-44e3-848d-ed85108beabe",
+              "name": "node",
+              "value": "17841478564240092",
+              "type": "string"
+            },
+            {
+              "id": "bb32be35-e58f-44ff-965e-cf9b5b3e9abc",
+              "name": "MarcaTemporalFecha",
+              "value": "={{ $('Transforma Para tener ID de columna1').item.json.MarcaTemporalFecha }}",
+              "type": "string"
+            },
+            {
+              "id": "139165ce-d17e-4518-a69f-983a16726e11",
+              "name": "Datos publicación",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Datos publicación'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7f55091f-a107-4801-8a2e-2510cfa5b9a6",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2464,
+        768
+      ],
+      "id": "3a9d0080-0c59-4fbc-a991-c0499adbab83",
+      "name": "Agrupa datos"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfor (const item of items) {\n  // Verifica si la propiedad 'Imágenes o videos adjuntos' existe\n  if (item.json['Imágenes o videos adjuntos']) {\n    const url = item.json['Imágenes o videos adjuntos'];\n    console.log('URL encontrada:', url); // Imprime la URL para depurar\n    \n    // Asegúrate de que sea una cadena de texto válida\n    if (typeof url === 'string' && url.trim() !== '') {\n      // Expresión regular para extraer el ID de la URL de Drive\n      const regex = /(?:\\/open\\?id=|\\/d\\/)([^/]+)/;\n      const match = url.match(regex);\n      \n      if (match && match[1]) {\n        // Crea una nueva variable llamada 'driveFileId' con solo el ID limpio\n        item.json.driveFileId = match[1];\n        console.log('ID extraído:', match[1]); // Imprime el ID extraído para depurar\n      } else {\n        console.log('No se pudo extraer el ID de la URL:', url); // No se pudo extraer el ID\n      }\n    } else {\n      console.log('URL no válida en el campo \"Imágenes o videos adjuntos\":', url); // La URL no es válida\n    }\n  } else {\n    console.log('No existe el campo \"Imágenes o videos adjuntos\" en este item:', item.json); // El campo no existe\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2256,
+        768
+      ],
+      "id": "ecf52722-7656-4a25-99db-37d7164bd3e4",
+      "name": "Id al archivo"
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Id al archivo').item.json.driveFileId }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2080,
+        768
+      ],
+      "id": "d7f40ac4-cabc-4824-9490-6712eb5bb555",
+      "name": "Comparte el archivo con el id",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ptnCPa9NJug1AuMH",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Id al archivo').item.json.driveFileId }}",
+          "mode": "id"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1888,
+        768
+      ],
+      "id": "f9664a75-34c4-4402-8ffc-d39c11c71512",
+      "name": "Descarga archivo en binary",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ptnCPa9NJug1AuMH",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "74bf0942-5efd-4b2f-aeb0-99dfd42b1c2c",
+              "leftValue": "={{ $('Agrupa datos').item.json['Tipo de Actividad'] }}",
+              "rightValue": "Logro Estudiantil",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1264,
+        752
+      ],
+      "id": "8bc13a0e-7d2e-4bb6-869c-3aaf795ad4d1",
+      "name": "Clasifica según actividad "
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = $input.all()[0];\n\n// 1. Acceder al dato binario 'data'\nconst rawBinaryData = inputItem.binary ? inputItem.binary.data : null; \n\nif (!rawBinaryData) {\n    // Si no hay dato binario, salir.\n    return [];\n}\n\n// 2. Comprobar si es un array. Si no lo es, envolverlo en un array.\n// Esto soluciona el error \"not iterable\".\nlet allBinaryFiles;\nif (Array.isArray(rawBinaryData)) {\n    allBinaryFiles = rawBinaryData;\n} else {\n    // Es un solo archivo binario (un objeto), lo convertimos en un array de un elemento.\n    allBinaryFiles = [rawBinaryData]; \n}\n\nif (allBinaryFiles.length === 0) {\n    return [];\n}\n\nlet output = [];\n\n// 3. Itera sobre el array de archivos binarios (que ahora está garantizado que es un array)\nfor (const file of allBinaryFiles) {\n    let type;\n    \n    // Identifica el tipo de archivo por su MimeType\n    if (file.mimeType === 'image/jpeg' || file.mimeType === 'image/png') {\n        type = 'image';\n    } else if (file.mimeType === 'video/mp4') {\n        type = 'video';\n    } else {\n        // Ignorar otros tipos de archivo\n        continue; \n    }\n\n    // Crea un nuevo elemento de salida para este archivo\n    output.push({\n        // Incluye metadatos en el JSON\n        json: {\n            processType: type,\n            fileName: file.fileName || 'file',\n            mimeType: file.mimeType\n        },\n        // Adjunta el archivo binario usando la clave 'data'\n        binary: {\n            data: file \n        }\n    });\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        848
+      ],
+      "id": "5fb2486f-9255-4548-83d4-bb456f932568",
+      "name": "Revisa tipo de archivo video/imagen"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1680,
+        768
+      ],
+      "id": "3ca6f3e3-5476-4386-8e56-170f1f4bb131",
+      "name": "Loop para cada binary"
+    },
+    {
+      "parameters": {
+        "content": "Creación automatización con ia ",
+        "height": 400,
+        "width": 432,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2768,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "9ea644ab-b42b-4284-b5ba-49b44040ddf5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -896,
+        752
+      ],
+      "id": "9d7139e7-ec12-4f07-ae8c-ddae0f7a5aa2",
+      "name": "Vuelve a juntar"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wNMwWN5NqdZrsAII",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/wNMwWN5NqdZrsAII",
+          "cachedResultName": "SubWorkflow de difusor agente inteligente post instagram"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        480
+      ],
+      "id": "76e3cad6-ce62-4016-aae1-89102e9ce242",
+      "name": "Execute Workflow Instagram"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "7kLBuF908Ycf1XIz",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7kLBuF908Ycf1XIz",
+          "cachedResultName": "SubWorkflow de difusor agente inteligente post facebook"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        752
+      ],
+      "id": "a7acc748-9557-4ac1-b2c4-53c231e2671e",
+      "name": "Execute Workflow facebook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "596413cf-b9f8-40a3-b3c4-7e17b53ea480",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "63bfe531-5426-4166-8dc8-47d269c8e733",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "26a29475-327a-4e34-8e67-1006de22bb87",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "41cd856f-98f7-45cf-b412-de92864b17da",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ee87fef1-061d-471b-b59c-444c2858aaba",
+              "name": "Fecha",
+              "value": "={{ $('Cambiar formato fecha1').item.json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "ed3112c3-11bd-46da-92c1-ada72f8c05e1",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "1cf4bcf2-8fc1-4a2f-8bbe-7dbd22e8946b",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "52a8f8c9-6147-465c-8c87-4a4377124ade",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e6dc26b-a82b-435b-8e77-d6ca69d78a88",
+              "name": "page_test_id",
+              "value": "105243495725000 ",
+              "type": "string"
+            },
+            {
+              "id": "bd9a3f0b-6c92-44e3-848d-ed85108beabe",
+              "name": "node",
+              "value": "17841478564240092",
+              "type": "string"
+            },
+            {
+              "id": "bb32be35-e58f-44ff-965e-cf9b5b3e9abc",
+              "name": "MarcaTemporalFecha",
+              "value": "={{ $('Transforma Para tener ID de columna1').item.json.MarcaTemporalFecha }}",
+              "type": "string"
+            },
+            {
+              "id": "139165ce-d17e-4518-a69f-983a16726e11",
+              "name": "correo estudiante",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Dirección de correo electrónico'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7f55091f-a107-4801-8a2e-2510cfa5b9a6",
+              "name": "output",
+              "value": "={{ $('Prompt de mensaje1').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        752
+      ],
+      "id": "cfc0659a-00c9-4254-95c8-d1c1305edb44",
+      "name": "Agrupa datos1",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "596413cf-b9f8-40a3-b3c4-7e17b53ea480",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "63bfe531-5426-4166-8dc8-47d269c8e733",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "26a29475-327a-4e34-8e67-1006de22bb87",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "41cd856f-98f7-45cf-b412-de92864b17da",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ee87fef1-061d-471b-b59c-444c2858aaba",
+              "name": "Fecha",
+              "value": "={{ $('Cambiar formato fecha1').item.json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "ed3112c3-11bd-46da-92c1-ada72f8c05e1",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "1cf4bcf2-8fc1-4a2f-8bbe-7dbd22e8946b",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "52a8f8c9-6147-465c-8c87-4a4377124ade",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e6dc26b-a82b-435b-8e77-d6ca69d78a88",
+              "name": "page_test_id",
+              "value": "105243495725000 ",
+              "type": "string"
+            },
+            {
+              "id": "bd9a3f0b-6c92-44e3-848d-ed85108beabe",
+              "name": "node",
+              "value": "17841478564240092",
+              "type": "string"
+            },
+            {
+              "id": "bb32be35-e58f-44ff-965e-cf9b5b3e9abc",
+              "name": "MarcaTemporalFecha",
+              "value": "={{ $('Transforma Para tener ID de columna1').item.json.MarcaTemporalFecha }}",
+              "type": "string"
+            },
+            {
+              "id": "139165ce-d17e-4518-a69f-983a16726e11",
+              "name": "correo estudiante",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Dirección de correo electrónico'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7f55091f-a107-4801-8a2e-2510cfa5b9a6",
+              "name": "output",
+              "value": "={{ $('Prompt de mensaje1').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        480
+      ],
+      "id": "cab66d6d-75a1-4776-a285-cd4853b07fd6",
+      "name": "Agrupa datos2",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "596413cf-b9f8-40a3-b3c4-7e17b53ea480",
+              "name": "Tipo de Actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Tipo de Actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "63bfe531-5426-4166-8dc8-47d269c8e733",
+              "name": "Título de la actividad",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Título de la actividad'] }}",
+              "type": "string"
+            },
+            {
+              "id": "26a29475-327a-4e34-8e67-1006de22bb87",
+              "name": "Descripción breve",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Descripción breve'] }}",
+              "type": "string"
+            },
+            {
+              "id": "41cd856f-98f7-45cf-b412-de92864b17da",
+              "name": "Carrera Responsable",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Carrera Responsable'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ee87fef1-061d-471b-b59c-444c2858aaba",
+              "name": "Fecha",
+              "value": "={{ $('Cambiar formato fecha1').item.json.formattedDate }}",
+              "type": "string"
+            },
+            {
+              "id": "ed3112c3-11bd-46da-92c1-ada72f8c05e1",
+              "name": "Lugar",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json.Lugar }}",
+              "type": "string"
+            },
+            {
+              "id": "1cf4bcf2-8fc1-4a2f-8bbe-7dbd22e8946b",
+              "name": "Imágenes o videos adjuntos",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Imágenes o videos adjuntos'] }}",
+              "type": "string"
+            },
+            {
+              "id": "52a8f8c9-6147-465c-8c87-4a4377124ade",
+              "name": "Enlace adicional",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Enlace adicional'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e6dc26b-a82b-435b-8e77-d6ca69d78a88",
+              "name": "page_test_id",
+              "value": "105243495725000 ",
+              "type": "string"
+            },
+            {
+              "id": "bd9a3f0b-6c92-44e3-848d-ed85108beabe",
+              "name": "node",
+              "value": "17841478564240092",
+              "type": "string"
+            },
+            {
+              "id": "bb32be35-e58f-44ff-965e-cf9b5b3e9abc",
+              "name": "MarcaTemporalFecha",
+              "value": "={{ $('Transforma Para tener ID de columna1').item.json.MarcaTemporalFecha }}",
+              "type": "string"
+            },
+            {
+              "id": "139165ce-d17e-4518-a69f-983a16726e11",
+              "name": "correo estudiante",
+              "value": "={{ $('Base de datos de las solicitudes1').item.json['Dirección de correo electrónico'] }}",
+              "type": "string"
+            },
+            {
+              "id": "7f55091f-a107-4801-8a2e-2510cfa5b9a6",
+              "name": "output",
+              "value": "={{ $('Prompt de mensaje1').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        1008
+      ],
+      "id": "f7ecccd0-b1db-47a0-8e71-e15efb9e15ec",
+      "name": "Agrupa datos3",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "fileName",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        752
+      ],
+      "id": "d3686331-9e79-4686-b4c2-64073e1acaa8",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "hEqXTu6dIiHXlV9b",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/hEqXTu6dIiHXlV9b",
+          "cachedResultName": "SubWorkflow de difusor agente inteligente post wordpress"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        1008
+      ],
+      "id": "71fd03f0-e7ed-4f64-80e1-00967e7d0927",
+      "name": "Execute Workflow Wordpress"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Prompt de mensaje1": {
+      "main": [
+        [
+          {
+            "node": "Agrupa datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VALIDACION URL1": {
+      "main": [
+        [
+          {
+            "node": "If Validación es vacío o error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cambiar formato fecha1": {
+      "main": [
+        [
+          {
+            "node": "Lectura de los datos 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lectura de los datos 1": {
+      "main": [
+        [
+          {
+            "node": "Transforma Para tener ID de columna1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base de datos de las solicitudes1": {
+      "main": [
+        [
+          {
+            "node": "Cambiar formato fecha1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transforma Para tener ID de columna1": {
+      "main": [
+        [
+          {
+            "node": "Filtra que no haya HECHOS1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cambiar a PENDIENTE1": {
+      "main": [
+        [
+          {
+            "node": "IF URL NOT VACÍO1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtra que no haya HECHOS1": {
+      "main": [
+        [
+          {
+            "node": "Cambiar a PENDIENTE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualiza casilla en sheets1": {
+      "main": [
+        [
+          {
+            "node": "Adjunta todo1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Adjunta todo1": {
+      "main": [
+        [
+          {
+            "node": "Prompt de mensaje1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF URL NOT VACÍO1": {
+      "main": [
+        [
+          {
+            "node": "VALIDACION URL1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Adjunta todo1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "If Validación es vacío o error1": {
+      "main": [
+        [
+          {
+            "node": "Adjunta todo1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Actualiza casilla en sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prompt de mensaje1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupa datos": {
+      "main": [
+        [
+          {
+            "node": "Id al archivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Id al archivo": {
+      "main": [
+        [
+          {
+            "node": "Comparte el archivo con el id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comparte el archivo con el id": {
+      "main": [
+        [
+          {
+            "node": "Descarga archivo en binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descarga archivo en binary": {
+      "main": [
+        [
+          {
+            "node": "Loop para cada binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasifica según actividad ": {
+      "main": [
+        [
+          {
+            "node": "Vuelve a juntar",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Agrupa datos2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Vuelve a juntar",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Agrupa datos3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revisa tipo de archivo video/imagen": {
+      "main": [
+        [
+          {
+            "node": "Loop para cada binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop para cada binary": {
+      "main": [
+        [
+          {
+            "node": "Clasifica según actividad ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Revisa tipo de archivo video/imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vuelve a juntar": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Instagram": {
+      "main": [
+        []
+      ]
+    },
+    "Agrupa datos1": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupa datos2": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupa datos3": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow Wordpress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Agrupa datos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5343b3b4-44a8-4276-94c3-a01183799b89",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "57cbccbd29910ba3d5b74dc8112fc8d585b2c0b875b5fea8e89fd6f150d629f2"
+  },
+  "id": "wjsWYN8zI2uHnArR",
+  "tags": []
+}
