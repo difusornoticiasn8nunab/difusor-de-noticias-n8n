@@ -1,0 +1,825 @@
+{
+  "name": "Proyecto difusor de agente inteligente parte recibimiento de datos",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "HU3 VALIDACION DE URL\nEnlace Bueno --> Siguiente sprint\nEnlace inválido --> Actualización en casilla en sheets (Enlace Roto/Invalido (\"Enlace\"))",
+        "height": 352,
+        "width": 1088
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3936,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "63dde79d-90a8-48e9-a452-bf4fbe1f10c8",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "afe11627-5b29-4891-841c-ae2d2153ae58",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4704,
+        1088
+      ],
+      "id": "ff1a0c64-bdf1-4603-bdc7-bfb7c0822274",
+      "name": "Recibe datos formulario",
+      "webhookId": "afe11627-5b29-4891-841c-ae2d2153ae58"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "binaryPropertyName": "archivo",
+        "name": "={{ $json.body.correo }}-{{$binary.archivo.fileName }}",
+        "resolveData": true,
+        "parents": [
+          "1bt8izPGTfR9IL3nau-pzCMqWrXmE2xd1"
+        ],
+        "options": {}
+      },
+      "name": "Guardar el archivo en drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "id": "450b9d0e-c56f-4478-8789-e5e000daa0bc",
+      "position": [
+        -4496,
+        1088
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ToreairlFR3swuZr",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Función estándar de JavaScript para generar un UUID/GUID\nconst generateUUID = () => {\n    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {\n        const r = (Math.random() * 16) | 0;\n        const v = c === 'x' ? r : (r & 0x3) | 0x8;\n        return v.toString(16);\n    });\n};\n\n\nfor (const item of items) {\n    // 1. GENERACIÓN DEL ID ÚNICO\n    item.json.idFila = generateUUID(); \n\n    // 2. CÓDIGO DE FECHA Y HORA\n    const nowInChile = new Date(Date.now() - (3 * 60 * 60 * 1000)); \n\n    const year = nowInChile.getFullYear();\n    const month = String(nowInChile.getMonth() + 1).padStart(2, '0');\n    const day = String(nowInChile.getDate()).padStart(2, '0');\n    const hours = String(nowInChile.getHours()).padStart(2, '0');\n    const minutes = String(nowInChile.getMinutes()).padStart(2, '0');\n    const seconds = String(nowInChile.getSeconds()).padStart(2, '0');\n\n    // Asignación de la propiedad local de fecha y hora\n    item.json.fechaCreacionLocal = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n\n\n    // 3. VALIDACIÓN Y PROCESAMIENTO DE BINARIOS\n    if (item.binary && Object.keys(item.binary).length > 0) {\n        \n        const binaryProperties = Object.keys(item.binary);\n        const binaryPropertyName = binaryProperties[0];\n        const binaryObject = item.binary[binaryPropertyName];\n\n        // Extracción de Metadata\n        item.json.archivoNombre = binaryObject.fileName;\n        item.json.archivoTipo = binaryObject.mimeType;\n        item.json.archivoSize = binaryObject.fileSize;\n\n        // Renombrar el objeto binario a 'archivo' para el ruteo del nodo Drive\n        item.binary.archivo = item.binary[binaryPropertyName];\n        delete item.binary[binaryPropertyName]; \n\n    } else {\n        // Fallback si NO hay archivo adjunto\n        item.json.archivoNombre = 'NoFile';\n        item.json.archivoTipo = 'N/A';\n        item.json.archivoSize = 0;\n        item.binary = {}; \n    }\n}\n// **************** FIN DEL BUCLE PRINCIPAL *****************\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4288,
+        1088
+      ],
+      "id": "fd080de7-b3e1-4c62-ba24-d7073763e1bc",
+      "name": "Arreglo formato hora y archivo"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XC0R4nHYjx4puYU-McQ_q3wUR19vr-IL7MU94NGkZZI",
+          "mode": "list",
+          "cachedResultName": "Final Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XC0R4nHYjx4puYU-McQ_q3wUR19vr-IL7MU94NGkZZI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XC0R4nHYjx4puYU-McQ_q3wUR19vr-IL7MU94NGkZZI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "enlace_adicional": "={{ $('Recibe datos formulario').item.json.body.enlace }}",
+            "lugar": "={{ $('Recibe datos formulario').item.json.body.lugar }}",
+            "fecha_evento": "={{ $('Recibe datos formulario').item.json.body.fecha }}",
+            "carrera": "={{ $('Recibe datos formulario').item.json.body.carrera }}",
+            "descripcion": "={{ $('Recibe datos formulario').item.json.body.descripcion }}",
+            "titulo": "={{ $('Recibe datos formulario').item.json.body.titulo }}",
+            "tipo_actividad": "={{ $('Recibe datos formulario').item.json.body.tipo_actividad }}",
+            "correo": "={{ $('Recibe datos formulario').item.json.body.correo }}",
+            "fecha_creacion": "={{ $json.fechaCreacionLocal }}",
+            "estado": "PENDIENTE",
+            "intentos": "0",
+            "archivo_url": "={{ $json.webViewLink }}",
+            "archivo_id": "={{ $json.id }}",
+            "archivo_tipo": "={{ $json.mimeType }}",
+            "id": "={{ $json.idFila }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo_actividad",
+              "displayName": "tipo_actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "descripcion",
+              "displayName": "descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "carrera",
+              "displayName": "carrera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_evento",
+              "displayName": "fecha_evento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lugar",
+              "displayName": "lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "archivo_url",
+              "displayName": "archivo_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "archivo_id",
+              "displayName": "archivo_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "archivo_tipo",
+              "displayName": "archivo_tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "enlace_adicional",
+              "displayName": "enlace_adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_publicacion",
+              "displayName": "fecha_publicacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link_fb",
+              "displayName": "link_fb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link_ig",
+              "displayName": "link_ig",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link_web",
+              "displayName": "link_web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "intentos",
+              "displayName": "intentos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -4096,
+        1088
+      ],
+      "id": "75f477da-d53e-4f49-a553-1c340b2836b1",
+      "name": "Agrega petición a cola en base de datos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rJCoSA1uPwllDwHj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "65dbd059-eed6-465c-bf04-3bed7f0112d7",
+              "leftValue": "={{ $('Recibe datos formulario').item.json.body.enlace }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3888,
+        1088
+      ],
+      "id": "60f7b97c-efe1-417f-9c43-896e380d04d5",
+      "name": "IF NOT URL VACÍO"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c7f9871b-d610-4bc3-ba42-ebfa7ae39117",
+              "leftValue": "={{   /^https?:\\/\\/.+\\..+/.test(     $('Recibe datos formulario').item.json.body.enlace?.toString() || ''   ) }}",
+              "rightValue": "t",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3664,
+        1072
+      ],
+      "id": "fab814c3-c789-4fcb-8c8e-474dee5e346e",
+      "name": "If formato valido https"
+    },
+    {
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{ $('Recibe datos formulario').item.json.body.enlace }}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3488,
+        992
+      ],
+      "id": "42be8890-9782-46d9-b795-18da2bff9ae6",
+      "name": "VALIDACION URL METHOD HEAD",
+      "notesInFlow": false,
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aaebcb58-b41e-4a57-99fb-9e05249935ae",
+              "leftValue": "={{\n  !!$json.error ||\n  !!$json.code ||\n  ($json.statusCode && $json.statusCode >= 400)\n}}",
+              "rightValue": "=undefined",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "61939dce-af5a-4add-aa58-0bf06b463026",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3280,
+        992
+      ],
+      "id": "065147e4-357c-4704-a0b0-2d469840b16d",
+      "name": "If Not Funciona la página"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1XC0R4nHYjx4puYU-McQ_q3wUR19vr-IL7MU94NGkZZI",
+          "mode": "list",
+          "cachedResultName": "Final Agente automatizado de Difusión de Noticias y Actividades en Redes Sociales",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XC0R4nHYjx4puYU-McQ_q3wUR19vr-IL7MU94NGkZZI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XC0R4nHYjx4puYU-McQ_q3wUR19vr-IL7MU94NGkZZI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Agrega petición a cola en base de datos').item.json.id }}",
+            "enlace_adicional": "=Enlace Roto/Invalido ({{ $('Recibe datos formulario').item.json.body.enlace }})"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tipo_actividad",
+              "displayName": "tipo_actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descripcion",
+              "displayName": "descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "carrera",
+              "displayName": "carrera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fecha_evento",
+              "displayName": "fecha_evento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "lugar",
+              "displayName": "lugar",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "archivo_url",
+              "displayName": "archivo_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "archivo_id",
+              "displayName": "archivo_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "archivo_tipo",
+              "displayName": "archivo_tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "enlace_adicional",
+              "displayName": "enlace_adicional",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fecha_creacion",
+              "displayName": "fecha_creacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fecha_publicacion",
+              "displayName": "fecha_publicacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "link_fb",
+              "displayName": "link_fb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "link_ig",
+              "displayName": "link_ig",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "link_web",
+              "displayName": "link_web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "intentos",
+              "displayName": "intentos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3072,
+        1088
+      ],
+      "id": "9c19c6e3-3792-4d76-9830-cca4fa9d4271",
+      "name": "Actualiza casilla enlace en sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "rJCoSA1uPwllDwHj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "HU1 y HU2 Registro de artividad académica en google sheets y en drive\n\n",
+        "height": 256,
+        "width": 800,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4752,
+        1008
+      ],
+      "id": "7f907ba1-c029-43eb-b547-eb4115e8d9c6",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Recibe datos formulario": {
+      "main": [
+        [
+          {
+            "node": "Guardar el archivo en drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar el archivo en drive": {
+      "main": [
+        [
+          {
+            "node": "Arreglo formato hora y archivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Arreglo formato hora y archivo": {
+      "main": [
+        [
+          {
+            "node": "Agrega petición a cola en base de datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrega petición a cola en base de datos": {
+      "main": [
+        [
+          {
+            "node": "IF NOT URL VACÍO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF NOT URL VACÍO": {
+      "main": [
+        [
+          {
+            "node": "If formato valido https",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If formato valido https": {
+      "main": [
+        [
+          {
+            "node": "VALIDACION URL METHOD HEAD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Actualiza casilla enlace en sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VALIDACION URL METHOD HEAD": {
+      "main": [
+        [
+          {
+            "node": "If Not Funciona la página",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Not Funciona la página": {
+      "main": [
+        [
+          {
+            "node": "Actualiza casilla enlace en sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Actualiza casilla enlace en sheets": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dbed1351-fd55-4713-93ed-fc637c5b3f85",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4915128d6ee85395f21ebcee3fd8704d1d77411cc1b0dee3600e00562aa3dd01"
+  },
+  "id": "2WGuaL2uTNoxjJsJ",
+  "tags": []
+}
